@@ -1,0 +1,10 @@
+# Terraform local state/cache
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars.local
+
+# Keep provider selections reproducible
+!.terraform.lock.hcl

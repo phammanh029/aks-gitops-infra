@@ -1,5 +1,14 @@
 # Environment variable overrides for dev
 environment = "dev"
 
-# Enable public network access in dev so local developers can connect and send messages via Entra ID RBAC
-servicebus_public_network_access_enabled = true
+flux_repositories = {
+  storefront = {
+    url  = "https://github.com/phammanh029/aks-gitops-storefront.git"
+    path = "./clusters/dev/storefront"
+  }
+
+  admin = {
+    url  = "https://github.com/phammanh029/aks-gitops-admin.git"
+    path = "./clusters/dev/admin"
+  }
+}

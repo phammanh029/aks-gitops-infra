@@ -1,6 +1,7 @@
 variable "environment" {
-  description = "Target environment name (dev, qa, or prod)"
+  description = "Target environment name."
   type        = string
+
   validation {
     condition     = contains(["dev", "qa", "prod"], var.environment)
     error_message = "Environment must be one of: dev, qa, prod."
@@ -8,224 +9,128 @@ variable "environment" {
 }
 
 variable "resource_tags" {
-  description = "Default tags to apply to most resources"
+  description = "Default tags to apply to resources."
   type        = map(string)
   default = {
-    service    = "core-infrastructure"
+    service    = "aks-gitops-demo"
     managed-by = "terraform"
-    project    = "shop 6"
-    owner      = "[iac] shop-6"
+    project    = "aks-appgw-flux-demo"
   }
 }
 
 variable "resource_group_name" {
-  description = "Name of the resource group"
+  description = "Name of the existing resource group where demo resources are provisioned."
   type        = string
 }
 
 variable "location" {
-  description = "Azure region"
+  description = "Azure region."
   type        = string
   default     = "West Europe"
 }
 
-variable "enable_redis" {
-  description = "Toggle to enable/disable Redis cache provisioning"
-  type        = bool
-  default     = false
-}
-
-variable "enable_postgres" {
-  description = "Toggle to enable/disable PostgreSQL server provisioning"
-  type        = bool
-  default     = false
-}
-
-variable "redis_name" {
-  description = "Name of the Redis cache"
-  type        = string
-}
-
-variable "postgres_name" {
-  description = "Name of the PostgreSQL server"
-  type        = string
-}
-
-variable "postgres_admin_user" {
-  description = "Admin username for PostgreSQL"
-  type        = string
-}
-
-variable "postgres_admin_password" {
-  description = "Admin password for PostgreSQL"
-  type        = string
-  sensitive   = true
-}
-
-# Network posture: private by default; may enable limited public access via tfvars.
-variable "redis_public_network_access_enabled" {
-  description = "Allow public network access to Redis"
-  type        = bool
-  default     = false
-}
-
-variable "postgres_public_network_access_enabled" {
-  description = "Allow public network access to PostgreSQL"
-  type        = bool
-  default     = false
-}
-
-variable "postgres_firewall_allowed_ips" {
-  description = "Named IP ranges allowed through the PostgreSQL firewall when public access is enabled"
-  type = map(object({
-    start_ip_address = string
-    end_ip_address   = string
-  }))
-  default = {}
-}
-
-variable "servicebus_name" {
-  description = "Name of the Service Bus namespace"
-  type        = string
-}
-
 variable "aks_name" {
-  description = "Name of the AKS cluster"
+  description = "Name of the AKS cluster."
   type        = string
 }
 
 variable "gateway_name" {
-  description = "Name of the Application Gateway for Containers"
+  description = "Name of the Application Gateway for Containers resource."
   type        = string
 }
 
 variable "create_vnet" {
-  description = "Set to true to provision a new Virtual Network; false to import an existing Virtual Network."
+  description = "Set to true to provision a new virtual network; false to use an existing virtual network."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "vnet_name" {
-  description = "Name of the Virtual Network (Mandatory in all modes)"
+  description = "Name of the virtual network."
   type        = string
+
   validation {
     condition     = length(trimspace(var.vnet_name)) > 0
-    error_message = "ERROR: 'vnet_name' is mandatory and must not be empty."
+    error_message = "vnet_name must not be empty."
   }
 }
 
 variable "vnet_cidr" {
-  description = "Address space for the VNet (Required when create_vnet = true, e.g., '10.0.0.0/16')."
+  description = "Address space for the virtual network when create_vnet is true."
   type        = string
-  default     = ""
+  default     = "10.0.0.0/16"
+
   validation {
-    condition     = var.create_vnet == false || (var.vnet_cidr != "" && can(cidrhost(var.vnet_cidr, 0)))
-    error_message = "ERROR: 'vnet_cidr' must be a valid IPv4 CIDR block when 'create_vnet' is true."
+    condition     = var.create_vnet == false || can(cidrhost(var.vnet_cidr, 0))
+    error_message = "vnet_cidr must be a valid IPv4 CIDR block when create_vnet is true."
   }
 }
 
 variable "vnet_resource_group_name" {
-  description = "Resource Group of the Virtual Network (if different from resource_group_name)"
+  description = "Resource group of the existing virtual network when create_vnet is false. Defaults to resource_group_name."
   type        = string
   default     = ""
 }
 
 variable "aks_subnet_name" {
-  description = "Name of the subnet for AKS nodes (Mandatory in all modes)"
+  description = "Name of the AKS node subnet."
   type        = string
-  validation {
-    condition     = length(trimspace(var.aks_subnet_name)) > 0
-    error_message = "ERROR: 'aks_subnet_name' is mandatory and must not be empty."
-  }
-}
-
-variable "ingress_subnet_name" {
-  description = "Name of the ingress subnet for Traefik and Gateway routing (Mandatory in all modes)"
-  type        = string
-  validation {
-    condition     = length(trimspace(var.ingress_subnet_name)) > 0
-    error_message = "ERROR: 'ingress_subnet_name' is mandatory and must not be empty."
-  }
-}
-
-variable "ingress_subnet_cidr" {
-  description = "Address prefix for the ingress subnet (Required when importing an existing VNet or overriding defaults)"
-  type        = string
-  default     = ""
+  default     = "snet-aks"
 }
 
 variable "alb_subnet_name" {
-  description = "Name of the subnet delegated to Application Gateway for Containers (Mandatory in all modes)"
+  description = "Name of the subnet delegated to Application Gateway for Containers."
   type        = string
-  validation {
-    condition     = length(trimspace(var.alb_subnet_name)) > 0
-    error_message = "ERROR: 'alb_subnet_name' is mandatory and must not be empty."
-  }
+  default     = "snet-appgw-containers"
 }
 
 variable "alb_subnet_cidr" {
-  description = "Address prefix (/28) for the ALB subnet"
+  description = "Address prefix for the Application Gateway for Containers subnet. Must be at least /28."
   type        = string
   default     = ""
 }
 
-
-variable "registry_name" {
-  description = "Name of the existing hub container registry (external dependency)"
-  type        = string
-}
-
-# Service Bus Topic RBAC lists for each service composition
-variable "admin_servicebus_topic_receiver_ids" {
-  description = "Receiver topic IDs for admin service"
-  type        = list(string)
-  default     = []
-}
-
-variable "admin_servicebus_topic_sender_ids" {
-  description = "Sender topic IDs for admin service"
-  type        = list(string)
-  default     = []
-}
-
-variable "storefront_servicebus_topic_receiver_ids" {
-  description = "Receiver topic IDs for storefront service"
-  type        = list(string)
-  default     = []
-}
-
-variable "storefront_servicebus_topic_sender_ids" {
-  description = "Sender topic IDs for storefront service"
-  type        = list(string)
-  default     = []
-}
-
-variable "erp_connector_servicebus_topic_receiver_ids" {
-  description = "Receiver topic IDs for erp-connector service"
-  type        = list(string)
-  default     = []
-}
-
-variable "erp_connector_servicebus_topic_sender_ids" {
-  description = "Sender topic IDs for erp-connector service"
-  type        = list(string)
-  default     = []
-}
-
 variable "admin_group_object_ids" {
+  description = "Object IDs of Entra ID groups that receive AKS cluster admin access."
   type        = list(string)
-  description = "A list of Object IDs of Azure Active Directory Groups which should have Admin Role on the Cluster"
   default     = []
 }
 
-variable "servicebus_public_network_access_enabled" {
-  description = "Allow public network access to Service Bus (Required for Standard SKU and local dev access)"
+variable "enable_flux" {
+  description = "Enable AKS Flux GitOps configurations for external app repositories."
   type        = bool
-  default     = false
+  default     = true
 }
 
-variable "servicebus_local_auth_enabled" {
-  description = "Allow local SAS authentication on Service Bus (Useful for local dev debugging; keep disabled in qa/prod)"
-  type        = bool
-  default     = false
+variable "flux_namespace" {
+  description = "Namespace for Flux extension/configuration."
+  type        = string
+  default     = "flux-system"
+}
+
+variable "flux_repositories" {
+  description = "External app repositories for Flux to sync. Keys become Flux configuration names and Terraform resource identity."
+  type = map(object({
+    url                        = string
+    path                       = string
+    branch                     = optional(string, "main")
+    sync_interval_in_seconds   = optional(number, 60)
+    retry_interval_in_seconds  = optional(number, 60)
+    timeout_in_seconds         = optional(number, 600)
+    garbage_collection_enabled = optional(bool, true)
+  }))
+  default = {}
+
+  validation {
+    condition     = var.enable_flux == false || length(var.flux_repositories) > 0
+    error_message = "flux_repositories must contain at least one repository when enable_flux is true."
+  }
+
+  validation {
+    condition = alltrue([
+      for name, repo in var.flux_repositories :
+      can(regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$", name)) && length(name) <= 63
+    ])
+    error_message = "flux_repositories keys must be valid Kubernetes-style names: lowercase letters, numbers, hyphens, max 63 characters."
+  }
 }
