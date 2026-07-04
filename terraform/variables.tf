@@ -14,7 +14,7 @@ variable "resource_tags" {
   default = {
     service    = "aks-gitops-demo"
     managed-by = "terraform"
-    project    = "aks-appgw-flux-demo"
+    project    = "aks-flux-demo"
   }
 }
 
@@ -31,11 +31,6 @@ variable "location" {
 
 variable "aks_name" {
   description = "Name of the AKS cluster."
-  type        = string
-}
-
-variable "gateway_name" {
-  description = "Name of the Application Gateway for Containers resource."
   type        = string
 }
 
@@ -76,18 +71,6 @@ variable "aks_subnet_name" {
   description = "Name of the AKS node subnet."
   type        = string
   default     = "snet-aks"
-}
-
-variable "alb_subnet_name" {
-  description = "Name of the subnet delegated to Application Gateway for Containers."
-  type        = string
-  default     = "snet-appgw-containers"
-}
-
-variable "alb_subnet_cidr" {
-  description = "Address prefix for the Application Gateway for Containers subnet. Use at least /24 to provide the 250+ available IPs expected by AGC guidance."
-  type        = string
-  default     = ""
 }
 
 variable "admin_group_object_ids" {

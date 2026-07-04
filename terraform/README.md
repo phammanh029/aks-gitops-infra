@@ -1,11 +1,13 @@
-# AKS + Application Gateway for Containers + Flux demo
+# AKS + Flux GitOps demo
 
-This Terraform root provisions only the infrastructure for a minimal AKS GitOps demo:
+This Terraform root provisions only the infrastructure needed to test AKS GitOps:
 
 - AKS cluster
-- Virtual network and subnets
-- Application Gateway for Containers Azure resources
-- AKS Flux configurations that sync external app repositories
+- Virtual network and AKS subnet
+- AKS Flux extension
+- Flux configurations that sync external app repositories
+
+No Application Gateway, Gateway API, HTTPRoute, or alerting/monitoring add-ons are configured by this Terraform root.
 
 The AKS configuration is intentionally constrained for the demo environment limits:
 
@@ -15,7 +17,7 @@ The AKS configuration is intentionally constrained for the demo environment limi
 - Istio/service mesh disabled
 - no alerting/monitoring add-ons configured by this Terraform root
 
-The app services are intentionally in separate GitHub repositories. This repo should not contain application Deployment, Service, Gateway, or HTTPRoute manifests.
+The app services are intentionally in separate GitHub repositories. This repo should not contain application Deployment or Service manifests.
 
 ## External app repo contract
 
@@ -30,8 +32,6 @@ aks-gitops-storefront/
         namespace.yaml
         deployment.yaml
         service.yaml
-        gateway.yaml        # demo owner of the shared HTTP Gateway
-        httproute.yaml      # recommended for routing to the Service
 
 aks-gitops-admin/
   clusters/
@@ -39,20 +39,14 @@ aks-gitops-admin/
       admin/
         kustomization.yaml
         namespace.yaml
+        configmap.yaml
         deployment.yaml
         service.yaml
-        httproute.yaml      # attaches to the shared Gateway from storefront
 ```
-
-The app can be a simple echo container. Example images:
-
-- `hashicorp/http-echo`
-- `ealen/echo-server`
-- `mendhak/http-https-echo`
 
 Flux in this infra repo points at one or more external app repos through the `flux_repositories` map. Each map key becomes the Flux configuration name, so keep keys stable after apply.
 
-Example with two separate app repos:
+Example:
 
 ```hcl
 flux_repositories = {
@@ -70,33 +64,24 @@ flux_repositories = {
 }
 ```
 
-You can add more app repos by adding more entries to this map.
-
 ## Usage
 
 Initialize with your Azure backend configuration:
 
 ```bash
-terraform -chdir=terraform init \
-  -backend-config="resource_group_name=<state-rg>" \
-  -backend-config="storage_account_name=<state-storage-account>" \
-  -backend-config="container_name=<state-container>" \
-  -backend-config="key=aks-appgw-flux-dev.tfstate"
+terraform -chdir=terraform init   -backend-config="resource_group_name=<state-rg>"   -backend-config="storage_account_name=<state-storage-account>"   -backend-config="container_name=<state-container>"   -backend-config="key=aks-flux-dev.tfstate"
 ```
 
 Plan:
 
 ```bash
-terraform -chdir=terraform plan \
-  -var-file="envs/dev.tfvars" \
-  -var="resource_group_name=<demo-rg>" \
-  -var="aks_name=<aks-name>" \
-  -var="gateway_name=<appgw-containers-name>" \
-  -var="vnet_name=<vnet-name>" \
-  -var='flux_repositories={
-    storefront={url="https://github.com/phammanh029/aks-gitops-storefront.git",path="./clusters/dev/storefront"},
-    admin={url="https://github.com/phammanh029/aks-gitops-admin.git",path="./clusters/dev/admin"}
-  }'
+terraform -chdir=terraform plan   -var-file="envs/dev.tfvars"   -var="resource_group_name=<demo-rg>"   -var="aks_name=<aks-name>"   -var="vnet_name=<vnet-name>"
+```
+
+Apply:
+
+```bash
+terraform -chdir=terraform apply   -var-file="envs/dev.tfvars"   -var="resource_group_name=<demo-rg>"   -var="aks_name=<aks-name>"   -var="vnet_name=<vnet-name>"
 ```
 
 ## Notes
@@ -105,5 +90,4 @@ terraform -chdir=terraform plan \
 - `flux_repositories` must contain at least one app repository when `enable_flux = true`.
 - Public HTTPS GitHub repos are simplest for demos. Private repos require Flux credentials and should not be hard-coded in tfvars.
 - Terraform does not deploy the storefront/admin apps directly; Flux reconciles them from the external repositories.
-- The external app manifests assume the Application Gateway for Containers GatewayClass/ALB controller is installed in the cluster. This Terraform root provisions the AKS cluster, VNet/subnets, Application Gateway for Containers Azure resources, and Flux wiring.
-- Each external app repo should be small and disposable: Kustomize manifests only, with the app using a public echo container image.
+- The app repos intentionally use `ClusterIP` services only. Use `kubectl port-forward` to test them without ingress.

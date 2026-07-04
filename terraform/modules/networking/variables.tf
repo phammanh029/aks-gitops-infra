@@ -53,14 +53,3 @@ variable "aks_subnet_name" {
   default     = "snet-aks"
 }
 
-variable "alb_subnet_name" {
-  description = "Name of the subnet delegated to Application Gateway for Containers."
-  type        = string
-  default     = "snet-appgw-containers"
-}
-
-variable "alb_subnet_cidr" {
-  description = "Address prefix for the Application Gateway for Containers subnet. Use at least /24 to provide the 250+ available IPs expected by AGC guidance."
-  type        = string
-  default     = ""
-}

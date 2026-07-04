@@ -18,7 +18,3 @@ output "aks_subnet_id" {
   value       = local.aks_subnet_id
 }
 
-output "alb_subnet_id" {
-  description = "Resource ID of the subnet delegated to Application Gateway for Containers."
-  value       = azurerm_subnet.alb.id
-}

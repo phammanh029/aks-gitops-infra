@@ -38,25 +38,9 @@ output "aks_subnet_id" {
   value       = module.networking.aks_subnet_id
 }
 
-output "alb_subnet_id" {
-  description = "Resource ID of the subnet delegated to Application Gateway for Containers."
-  value       = module.networking.alb_subnet_id
-}
 
-output "gateway_id" {
-  description = "Resource ID of the Application Gateway for Containers resource."
-  value       = azurerm_application_load_balancer.this.id
-}
 
-output "gateway_name" {
-  description = "Name of the Application Gateway for Containers resource."
-  value       = azurerm_application_load_balancer.this.name
-}
 
-output "gateway_frontend_name" {
-  description = "Frontend name of the Application Gateway for Containers resource."
-  value       = azurerm_application_load_balancer_frontend.this.name
-}
 
 output "flux_configuration_ids" {
   description = "IDs of Flux configurations keyed by external app name."

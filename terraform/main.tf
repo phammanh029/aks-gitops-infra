@@ -31,14 +31,11 @@ module "platform_shared" {
   location            = var.location
 
   aks_name                 = var.aks_name
-  gateway_name             = var.gateway_name
   create_vnet              = var.create_vnet
   vnet_name                = var.vnet_name
   vnet_cidr                = var.vnet_cidr
   vnet_resource_group_name = var.vnet_resource_group_name
   aks_subnet_name          = var.aks_subnet_name
-  alb_subnet_name          = var.alb_subnet_name
-  alb_subnet_cidr          = var.alb_subnet_cidr
   admin_group_object_ids   = var.admin_group_object_ids
 
   enable_flux       = var.enable_flux

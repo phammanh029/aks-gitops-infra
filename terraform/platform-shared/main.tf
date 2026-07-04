@@ -19,8 +19,6 @@ module "networking" {
   vnet_cidr                = var.vnet_cidr
   vnet_resource_group_name = var.vnet_resource_group_name
   aks_subnet_name          = var.aks_subnet_name
-  alb_subnet_name          = var.alb_subnet_name
-  alb_subnet_cidr          = var.alb_subnet_cidr
   tags                     = var.tags
 }
 
@@ -38,24 +36,6 @@ module "aks" {
   tags                   = var.tags
 }
 
-resource "azurerm_application_load_balancer" "this" {
-  name                = var.gateway_name
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  tags                = var.tags
-}
-
-resource "azurerm_application_load_balancer_subnet_association" "this" {
-  name                         = "${var.gateway_name}-association"
-  application_load_balancer_id = azurerm_application_load_balancer.this.id
-  subnet_id                    = module.networking.alb_subnet_id
-}
-
-resource "azurerm_application_load_balancer_frontend" "this" {
-  name                         = "${var.gateway_name}-frontend"
-  application_load_balancer_id = azurerm_application_load_balancer.this.id
-  tags                         = var.tags
-}
 
 resource "azurerm_kubernetes_cluster_extension" "flux" {
   count = var.enable_flux ? 1 : 0

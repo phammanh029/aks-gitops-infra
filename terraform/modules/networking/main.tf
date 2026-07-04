@@ -47,19 +47,3 @@ locals {
   vnet_resource_group = var.create_vnet ? azurerm_virtual_network.this[0].resource_group_name : data.azurerm_virtual_network.existing[0].resource_group_name
   aks_subnet_id       = var.create_vnet ? azurerm_subnet.aks[0].id : data.azurerm_subnet.aks_existing[0].id
 }
-
-resource "azurerm_subnet" "alb" {
-  name                 = var.alb_subnet_name
-  resource_group_name  = local.vnet_resource_group
-  virtual_network_name = local.vnet_name
-  address_prefixes     = [var.alb_subnet_cidr != "" ? var.alb_subnet_cidr : (var.create_vnet ? cidrsubnet(var.vnet_cidr, 8, 16) : "10.0.16.0/24")]
-
-  delegation {
-    name = "alb-delegation"
-
-    service_delegation {
-      name    = "Microsoft.ServiceNetworking/trafficControllers"
-      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
-    }
-  }
-}
