@@ -32,7 +32,7 @@ module "aks" {
   resource_group_name    = var.resource_group_name
   vnet_subnet_id         = module.networking.aks_subnet_id
   min_count              = 2
-  max_count              = 10
+  max_count              = 2
   enable_istio           = false
   admin_group_object_ids = var.admin_group_object_ids
   tags                   = var.tags

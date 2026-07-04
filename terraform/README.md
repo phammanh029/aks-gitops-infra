@@ -7,6 +7,14 @@ This Terraform root provisions only the infrastructure for a minimal AKS GitOps 
 - Application Gateway for Containers Azure resources
 - AKS Flux configurations that sync external app repositories
 
+The AKS configuration is intentionally constrained for the demo environment limits:
+
+- one default agent pool only
+- `Standard_D2s_v3` nodes
+- two nodes maximum
+- Istio/service mesh disabled
+- no alerting/monitoring add-ons configured by this Terraform root
+
 The app services are intentionally in separate GitHub repositories. This repo should not contain application Deployment, Service, Gateway, or HTTPRoute manifests.
 
 ## External app repo contract

@@ -50,10 +50,10 @@ variable "min_count" {
 variable "max_count" {
   type        = number
   description = "Maximum node count for default node pool autoscaling"
-  default     = 10
+  default     = 2
   validation {
-    condition     = var.max_count == 10
-    error_message = "The maximum node count must be exactly 10 for this feature scope."
+    condition     = var.max_count <= 2
+    error_message = "The maximum node count must be 2 or less for this demo environment limit."
   }
 }
 
