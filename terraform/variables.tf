@@ -85,7 +85,7 @@ variable "alb_subnet_name" {
 }
 
 variable "alb_subnet_cidr" {
-  description = "Address prefix for the Application Gateway for Containers subnet. Must be at least /28."
+  description = "Address prefix for the Application Gateway for Containers subnet. Use at least /24 to provide the 250+ available IPs expected by AGC guidance."
   type        = string
   default     = ""
 }

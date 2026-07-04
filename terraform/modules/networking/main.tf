@@ -52,7 +52,7 @@ resource "azurerm_subnet" "alb" {
   name                 = var.alb_subnet_name
   resource_group_name  = local.vnet_resource_group
   virtual_network_name = local.vnet_name
-  address_prefixes     = [var.alb_subnet_cidr != "" ? var.alb_subnet_cidr : (var.create_vnet ? cidrsubnet(var.vnet_cidr, 12, 16) : "10.0.2.0/28")]
+  address_prefixes     = [var.alb_subnet_cidr != "" ? var.alb_subnet_cidr : (var.create_vnet ? cidrsubnet(var.vnet_cidr, 8, 16) : "10.0.16.0/24")]
 
   delegation {
     name = "alb-delegation"
