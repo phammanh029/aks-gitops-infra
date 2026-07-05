@@ -91,6 +91,18 @@ variable "flux_namespace" {
   default     = "flux-system"
 }
 
+variable "generate_flux_ssh_keys" {
+  description = "Generate one SSH deploy key per Flux repository and configure Flux to use it. Public keys must be added to the matching GitHub repos as read-only deploy keys before Flux can sync private repos."
+  type        = bool
+  default     = false
+}
+
+variable "flux_ssh_known_hosts" {
+  description = "Optional SSH known_hosts content for Flux Git repositories. Leave empty to let the Flux configuration omit explicit host key pinning."
+  type        = string
+  default     = ""
+}
+
 variable "flux_repositories" {
   description = "External app repositories for Flux to sync. Keys become Flux configuration names and Terraform resource identity."
   type = map(object({
@@ -116,4 +128,5 @@ variable "flux_repositories" {
     ])
     error_message = "flux_repositories keys must be valid Kubernetes-style names: lowercase letters, numbers, hyphens, max 63 characters."
   }
+
 }

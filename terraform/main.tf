@@ -7,6 +7,11 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
     }
+
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.0"
+    }
   }
 }
 
@@ -41,6 +46,9 @@ module "platform_shared" {
   enable_flux       = var.enable_flux
   flux_namespace    = var.flux_namespace
   flux_repositories = var.flux_repositories
+
+  generate_flux_ssh_keys = var.generate_flux_ssh_keys
+  flux_ssh_known_hosts   = var.flux_ssh_known_hosts
 
   tags = local.tags
 }

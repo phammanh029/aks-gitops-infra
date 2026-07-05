@@ -42,8 +42,8 @@ variable "min_count" {
   description = "Minimum node count for default node pool autoscaling"
   default     = 2
   validation {
-    condition     = var.min_count >= 2
-    error_message = "The minimum node count must be at least 2."
+    condition     = var.min_count >= 1
+    error_message = "The minimum node count must be at least 1."
   }
 }
 

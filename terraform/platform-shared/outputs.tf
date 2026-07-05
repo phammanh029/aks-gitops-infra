@@ -46,3 +46,8 @@ output "flux_configuration_ids" {
   description = "IDs of Flux configurations keyed by external app name."
   value       = { for name, config in azurerm_kubernetes_flux_configuration.apps : name => config.id }
 }
+
+output "flux_repository_deploy_public_keys" {
+  description = "OpenSSH public deploy keys keyed by Flux repository name. Add each value to its matching GitHub repo as a read-only deploy key before or immediately after apply."
+  value       = { for name, key in tls_private_key.flux_repository : name => key.public_key_openssh }
+}

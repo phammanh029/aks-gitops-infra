@@ -51,20 +51,48 @@ Example:
 ```hcl
 flux_repositories = {
   storefront = {
-    url    = "https://github.com/phammanh029/aks-gitops-storefront.git"
+    url    = "ssh://git@github.com/phammanh029/aks-gitops-storefront.git"
     branch = "main"
     path   = "./clusters/dev/storefront"
   }
 
   admin = {
-    url    = "https://github.com/phammanh029/aks-gitops-admin.git"
+    url    = "ssh://git@github.com/phammanh029/aks-gitops-admin.git"
     branch = "main"
     path   = "./clusters/dev/admin"
   }
 }
 ```
 
+For private GitHub app repositories, set `generate_flux_ssh_keys = true`. Terraform then:
+
+- generates one ED25519 SSH key per Flux repository,
+- configures the AKS Flux configuration with the matching private key.
+- outputs each public key as `flux_repository_deploy_public_keys`.
+
+After apply, add each public key to the matching private GitHub app repository as a read-only deploy key. Flux may report authentication failures until the keys are added; it should recover on the next reconciliation after GitHub accepts the deploy keys.
+
+Example dev settings:
+
+```hcl
+generate_flux_ssh_keys = true
+```
+
+The generated private keys are stored in Terraform state. Protect the AzureRM state backend as sensitive infrastructure secret storage.
+
 ## Usage
+
+From the repository root, use the helper script for normal demo operations:
+
+```bash
+./deploy.sh plan
+./deploy.sh apply
+./deploy.sh verify
+```
+
+The script logs in with the Azure service principal, creates the demo resource group if needed, initializes the AzureRM Terraform backend, runs `fmt`/`validate`, and then runs Terraform plan/apply with `envs/dev.tfvars`.
+
+Manual Terraform commands are also supported.
 
 Initialize with your Azure backend configuration:
 
@@ -82,12 +110,13 @@ Apply:
 
 ```bash
 terraform -chdir=terraform apply   -var-file="envs/dev.tfvars"   -var="resource_group_name=<demo-rg>"   -var="aks_name=<aks-name>"   -var="vnet_name=<vnet-name>"
+terraform -chdir=terraform output -no-color flux_repository_deploy_public_keys
 ```
 
 ## Notes
 
 - This repo assumes the Azure resource group already exists.
 - `flux_repositories` must contain at least one app repository when `enable_flux = true`.
-- Public HTTPS GitHub repos are simplest for demos. Private repos require Flux credentials and should not be hard-coded in tfvars.
+- Private GitHub repos use generated SSH deploy keys. Do not hard-code private keys, PATs, or credentialized HTTPS URLs in tfvars.
 - Terraform does not deploy the storefront/admin apps directly; Flux reconciles them from the external repositories.
 - The app repos intentionally use `ClusterIP` services only. Use `kubectl port-forward` to test them without ingress.

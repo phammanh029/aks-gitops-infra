@@ -6,7 +6,18 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
     }
+
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.0"
+    }
   }
+}
+
+resource "tls_private_key" "flux_repository" {
+  for_each = var.enable_flux && var.generate_flux_ssh_keys ? var.flux_repositories : {}
+
+  algorithm = "ED25519"
 }
 
 module "networking" {
@@ -63,9 +74,11 @@ resource "azurerm_kubernetes_flux_configuration" "apps" {
   scope      = "cluster"
 
   git_repository {
-    url             = each.value.url
-    reference_type  = "branch"
-    reference_value = each.value.branch
+    url                    = each.value.url
+    reference_type         = "branch"
+    reference_value        = each.value.branch
+    ssh_private_key_base64 = var.generate_flux_ssh_keys ? base64encode(tls_private_key.flux_repository[each.key].private_key_openssh) : null
+    ssh_known_hosts_base64 = var.flux_ssh_known_hosts != "" ? base64encode(var.flux_ssh_known_hosts) : null
   }
 
   kustomizations {

@@ -26,3 +26,8 @@ output "flux_configuration_ids" {
   description = "IDs of Flux configurations keyed by external app name."
   value       = module.platform_shared.flux_configuration_ids
 }
+
+output "flux_repository_deploy_public_keys" {
+  description = "OpenSSH public deploy keys keyed by Flux repository name. Add each value to its matching GitHub repo as a read-only deploy key."
+  value       = module.platform_shared.flux_repository_deploy_public_keys
+}
